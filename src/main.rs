@@ -2,7 +2,7 @@ use actix_web::{web, App, HttpServer, Responder};
 
 mod cli;
 
-async fn index() -> impl Responder {
+async fn root() -> impl Responder {
     "Hello world!"
 }
 
@@ -11,12 +11,8 @@ async fn main() -> std::io::Result<()> {
     let matches = cli::create_parser().get_matches();
 
     HttpServer::new(|| {
-        App::new().service(
-            // prefixes all resources and routes attached to it...
-            web::scope("/app")
-                // ...so this handles requests for `GET /app/index.html`
-                .route("/index.html", web::get().to(index)),
-        )
+        App::new()
+            .route("/", web::get().to(root))
     })
     .bind(matches.value_of("bind").unwrap())?
     .run()
