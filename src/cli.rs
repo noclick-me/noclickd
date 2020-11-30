@@ -9,7 +9,6 @@ pub fn create_parser<'a, 'b>() -> clap::App<'a, 'b> {
                 .long("bind")
                 .default_value("127.0.0.1:8080")
                 .value_name("IP:PORT")
-                .help("Set the address/port to bind the server to")
-                .takes_value(true),
+                .help("Set the address/port to bind the server to"),
         )
 }
