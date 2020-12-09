@@ -9,3 +9,8 @@ edition = "2018"
 [dependencies]
 actix-web = "3"
 clap = "~2.33.3"
+nanoid = "0.3"
+regex = "1"
+serde = { version = "1.0", features = ["derive"] }
+url = "2.2"
+webpage = "1.2"
