@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::sync::RwLock;
 
+use crate::config::Config;
+
 #[derive(Debug)]
 pub struct Entry {
     pub id: String,
@@ -10,12 +12,14 @@ pub struct Entry {
 
 pub struct SharedState {
     pub db: RwLock<HashMap<String, Entry>>,
+    pub config: Config,
 }
 
 impl SharedState {
-    pub fn new() -> Self {
+    pub fn new(config: Config) -> Self {
         SharedState {
             db: RwLock::new(HashMap::new()),
+            config,
         }
     }
 }
