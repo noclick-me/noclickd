@@ -1,9 +1,10 @@
-use crate::state::SharedState;
+use crate::config::Config;
+use crate::state::{Entry, SharedState};
 use crate::url_info::UrlInfo;
 
 use actix_web::{get, post, web, HttpResponse, Responder, Scope};
 use serde::{Deserialize, Serialize};
-use std::collections::hash_map::Entry;
+use std::collections::hash_map;
 
 pub fn mount(scope: Scope) -> Scope {
     scope.service(url_get).service(url_post)
@@ -18,7 +19,22 @@ struct UrlCreateRq {
 struct UrlCreateRs<'a> {
     id: &'a str,
     source_url: &'a str,
-    noclick_url: &'a str,
+    noclick_url: String,
+}
+
+impl<'a> UrlCreateRs<'a> {
+    fn from_entry(entry: &'a Entry, config: &Config) -> Self {
+        let mut url = format!(
+            "{}/{}/{}",
+            config.link.base_url, entry.id, entry.noclick_url
+        );
+        url.truncate(config.link.max_length);
+        Self {
+            id: &entry.id,
+            source_url: &entry.source_url,
+            noclick_url: url,
+        }
+    }
 }
 
 fn get_id() -> String {
@@ -33,11 +49,8 @@ async fn url_get(
     dbg!(&id);
     let read_db = state.db.read().unwrap();
     let entry = read_db.get(&id).unwrap();
-    return HttpResponse::Ok().json(UrlCreateRs {
-        id: &entry.id,
-        source_url: &entry.source_url,
-        noclick_url: &entry.noclick_url,
-    });
+
+    HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &state.config))
 }
 
 #[post("")]
@@ -50,18 +63,14 @@ async fn url_post(rq: web::Json<UrlCreateRq>, state: web::Data<SharedState>) -> 
     // TODO: limit looping
     loop {
         match write_db.entry(id.to_string()) {
-            Entry::Occupied(_) => id = get_id(),
-            Entry::Vacant(e) => {
-                let entry = e.insert(crate::state::Entry {
+            hash_map::Entry::Occupied(_) => id = get_id(),
+            hash_map::Entry::Vacant(e) => {
+                let entry = e.insert(Entry {
                     id: id.clone(),
                     source_url: info.url.clone(),
-                    noclick_url: info.urlize().unwrap(),
+                    noclick_url: info.urlize(state.config.link.max_length).unwrap(),
                 });
-                return HttpResponse::Ok().json(UrlCreateRs {
-                    id: &entry.id,
-                    source_url: &entry.source_url,
-                    noclick_url: &entry.noclick_url,
-                });
+                return HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &state.config));
             }
         };
     }

@@ -15,8 +15,6 @@ pub struct UrlInfo {
     pub text_content: String,
 }
 
-const MAX_LEN: usize = 1024;
-
 impl UrlInfo {
     pub async fn fetch(url: &str) -> Result<Self, io::Error> {
         // TODO: async
@@ -30,21 +28,22 @@ impl UrlInfo {
             site_name: default.clone(),
             title: default.clone(),
             description: info.html.description,
-            text_content: info.html.text_content[..MAX_LEN].to_string(),
+            text_content: info.html.text_content.clone(),
         })
     }
 
-    pub fn urlize(&self) -> Result<String, ParseError> {
+    pub fn urlize(&self, max_length: usize) -> Result<String, ParseError> {
         let url = Url::parse(&self.url)?;
         let host_path = vec![url.host_str().unwrap_or(""), url.path()].join("");
         let components = vec![url.scheme(), &host_path, &self.title, &self.text_content];
-        let r = components
+        let mut r = components
             .iter()
             .filter(|c| !c.is_empty())
             .map(|c| urlize_str(&c))
             .collect::<Vec<String>>()
-            .join("/")[..MAX_LEN]
-            .to_string();
+            .join("/");
+        r.truncate(max_length); // only safe because we know urlize_str() will only produce ASCII
+
         Ok(r)
     }
 }
