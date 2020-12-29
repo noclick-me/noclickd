@@ -23,7 +23,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             link: LinkConfig {
-                base_url: "https://noclick.me".to_string(),
+                base_url: "https://api.noclick.me".to_string(),
                 max_length: 4096,
             },
             cors: CorsConfig {
