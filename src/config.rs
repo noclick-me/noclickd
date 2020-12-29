@@ -1,3 +1,4 @@
+use actix_web::http::{header, HeaderName, Method};
 
 #[derive(Debug)]
 pub struct LinkConfig {
@@ -6,8 +7,16 @@ pub struct LinkConfig {
 }
 
 #[derive(Debug)]
+pub struct CorsConfig {
+    pub allowed_origins: Vec<String>,
+    pub allowed_methods: Vec<Method>,
+    pub allowed_headers: Vec<HeaderName>,
+}
+
+#[derive(Debug)]
 pub struct Config {
     pub link: LinkConfig,
+    pub cors: CorsConfig,
 }
 
 impl Default for Config {
@@ -16,6 +25,19 @@ impl Default for Config {
             link: LinkConfig {
                 base_url: "https://noclick.me".to_string(),
                 max_length: 4096,
+            },
+            cors: CorsConfig {
+                allowed_origins: vec![
+                    "https://noclick.me",
+                    "https://test.noclick.me",
+                    "https://app.noclick.me",
+                    "https://test.app.noclick.me",
+                ].iter().map(|s| s.to_string()).collect(),
+                allowed_methods: vec![Method::GET, Method::POST],
+                allowed_headers: vec![
+                    header::ACCEPT,
+                    header::CONTENT_TYPE,
+                ],
             },
         }
     }
