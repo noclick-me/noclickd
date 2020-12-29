@@ -1,10 +1,11 @@
-#[derive(Debug)]
 
+#[derive(Debug)]
 pub struct LinkConfig {
     pub base_url: String,
     pub max_length: usize,
 }
 
+#[derive(Debug)]
 pub struct Config {
     pub link: LinkConfig,
 }
