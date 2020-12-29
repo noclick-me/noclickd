@@ -9,7 +9,7 @@ use crate::config::Config;
 use crate::state::SharedState;
 
 use actix_cors::Cors;
-use actix_web::{web, App, HttpServer};
+use actix_web::{guard, middleware, web, App, HttpServer};
 
 use rustls::internal::pemfile::{certs, pkcs8_private_keys};
 use rustls::{NoClientAuth, ServerConfig};
@@ -45,6 +45,7 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .wrap(cors)
+            .wrap(middleware::Compress::default())
             .app_data(state)
             .service(service::url::mount(web::scope("/url")))
             .service(service::view::mount(web::scope("/")))
