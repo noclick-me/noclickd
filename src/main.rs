@@ -8,7 +8,9 @@ mod urlize;
 use crate::config::Config;
 use crate::state::SharedState;
 
-use actix_web::{web, App, HttpServer};
+use actix_cors::Cors;
+use actix_web::{http::header, web, App, HttpServer};
+
 use rustls::internal::pemfile::{certs, pkcs8_private_keys};
 use rustls::{NoClientAuth, ServerConfig};
 use std::fs::File;
@@ -32,7 +34,16 @@ async fn main() -> std::io::Result<()> {
     let state = web::Data::new(SharedState::new(Config::default()));
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+              .allowed_origin("https://noclick.me")
+              .allowed_origin("https://test.noclick.me")
+              .allowed_methods(vec!["GET", "POST"])
+              .allowed_header(header::ACCEPT)
+              .allowed_header(header::CONTENT_TYPE)
+              .max_age(60 * 60 * 24); // 24 hours
+
         App::new()
+            .wrap(cors)
             .app_data(state.clone())
             .service(service::url::mount(web::scope("/url")))
             .service(service::view::mount(web::scope("/")))
