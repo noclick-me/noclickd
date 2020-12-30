@@ -47,8 +47,18 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .wrap(middleware::Compress::default())
             .app_data(state)
-            .service(service::url::mount(web::scope("/url")))
-            .service(service::view::mount(web::scope("/")))
+            .service(
+                service::webapp::mount(web::scope(&config().webapp.redirect_from_path)).guard(
+                    guard::fn_guard(|req| {
+                        req.uri.host() == Some(&config().webapp.redirect_from_host)
+                            && req.uri.path() == config().webapp.redirect_from_path
+                    }),
+                ),
+            )
+            .service(
+                service::view::mount(web::scope("/")).guard(guard::Host(&config().viewer.host)),
+            )
+            .service(service::url::mount(web::scope("/url")).guard(guard::Host(&config().api.host)))
     })
     .bind_rustls(matches.value_of("bind").unwrap(), tls_config())?
     .run()
