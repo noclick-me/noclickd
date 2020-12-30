@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::{config, Config};
 use crate::state::{Entry, SharedState};
 use crate::url_info::UrlInfo;
 
@@ -50,7 +50,7 @@ async fn url_get(
     let read_db = state.db.read().unwrap();
     let entry = read_db.get(&id).unwrap();
 
-    HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &state.config))
+    HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &config()))
 }
 
 #[post("")]
@@ -68,9 +68,9 @@ async fn url_post(rq: web::Json<UrlCreateRq>, state: web::Data<SharedState>) -> 
                 let entry = e.insert(Entry {
                     id: id.clone(),
                     source_url: info.url.clone(),
-                    noclick_url: info.urlize(state.config.link.max_length).unwrap(),
+                    noclick_url: info.urlize(config().link.max_length).unwrap(),
                 });
-                return HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &state.config));
+                return HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &config()));
             }
         };
     }

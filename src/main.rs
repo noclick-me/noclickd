@@ -5,7 +5,7 @@ mod state;
 mod url_info;
 mod urlize;
 
-use crate::config::Config;
+use crate::config::config;
 use crate::state::SharedState;
 
 use actix_cors::Cors;
@@ -30,16 +30,16 @@ fn tls_config() -> ServerConfig {
 async fn main() -> std::io::Result<()> {
     let matches = cli::create_parser().get_matches();
 
-    let state = web::Data::new(SharedState::new(Config::default()));
+    let state = web::Data::new(SharedState::new());
 
     println!("Binding to: {}...", matches.value_of("bind").unwrap());
     HttpServer::new(move || {
         let state = state.clone();
         let mut cors = Cors::default();
-        cors = cors.allowed_headers(state.config.cors.allowed_headers.clone());
-        cors = cors.allowed_methods(state.config.cors.allowed_methods.clone());
+        cors = cors.allowed_headers(config().cors.allowed_headers.clone());
+        cors = cors.allowed_methods(config().cors.allowed_methods.clone());
         cors = cors.max_age(60 * 60 * 24); // 24 hours
-        for origin in state.config.cors.allowed_origins.iter() {
+        for origin in config().cors.allowed_origins.iter() {
             cors = cors.allowed_origin(origin);
         }
 

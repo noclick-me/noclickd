@@ -1168,6 +1168,7 @@ dependencies = [
  "actix-cors",
  "actix-web",
  "clap",
+ "lazy_static",
  "nanoid",
  "regex",
  "rustls",

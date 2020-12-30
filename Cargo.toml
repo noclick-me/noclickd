@@ -10,6 +10,7 @@ edition = "2018"
 actix-cors = "0.5"
 actix-web = { version = "3", features = ["rustls"] }
 clap = "~2.33.3"
+lazy_static = "1.4"
 nanoid = "0.3"
 regex = "1"
 rustls = "0.18"

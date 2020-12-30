@@ -1,4 +1,14 @@
 use actix_web::http::{header, HeaderName, Method};
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref CONF: Config = Config::default();
+}
+
+pub fn config() -> &'static Config {
+    &CONF
+}
+
 
 #[derive(Debug)]
 pub struct LinkConfig {
