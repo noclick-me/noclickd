@@ -1,10 +1,10 @@
-# noclickd
+# noclickd - noclick.me server
 
 Share links with more descriptive URLs!
 
-This repository is the home of the REST API server, in charge of expanding
-links retrieving information about them and creating the more descriptive URLs
-for them.
+This repository is the home of the REST API server for the noclick.me, in
+charge of expanding links retrieving information about them and creating
+the more descriptive URLs for them.
 
 If you are looking for a client, see
 [noclick.me](https://github.com/noclick-me/noclick.me).
