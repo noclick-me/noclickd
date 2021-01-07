@@ -1,6 +1,6 @@
 use crate::config::{config, Config};
 use crate::state::{Entry, SharedState};
-use crate::url_info::UrlInfo;
+use crate::url_info::ResourceInfo;
 
 use actix_web::{get, post, web, HttpResponse, Responder, Scope};
 use serde::{Deserialize, Serialize};
@@ -55,7 +55,7 @@ async fn url_get(
 
 #[post("")]
 async fn url_post(rq: web::Json<UrlCreateRq>, state: web::Data<SharedState>) -> impl Responder {
-    let info = UrlInfo::fetch(&rq.url).await.unwrap();
+    let info = ResourceInfo::fetch(&rq.url).await.unwrap();
     dbg!(&info);
     let mut id = get_id();
 
@@ -66,8 +66,8 @@ async fn url_post(rq: web::Json<UrlCreateRq>, state: web::Data<SharedState>) -> 
             hash_map::Entry::Occupied(_) => id = get_id(),
             hash_map::Entry::Vacant(e) => {
                 let entry = e.insert(Entry {
-                    id: id.clone(),
-                    source_url: info.url.clone(),
+                    id,
+                    source_url: info.url.as_ref().unwrap().clone(), // URL should always exist here
                     noclick_url: info.urlize(config().link.max_length).unwrap(),
                 });
                 return HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &config()));
