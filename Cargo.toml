@@ -8,12 +8,14 @@ edition = "2018"
 
 [dependencies]
 actix-cors = "0.5"
+actix-http = "2.2.0"
 actix-web = { version = "3", features = ["rustls"] }
 clap = "~2.33.3"
+futures = "0.3"
+kuchiki = "0.8"
 lazy_static = "1.4"
 nanoid = "0.3"
 regex = "1"
 rustls = "0.18"
 serde = { version = "1.0", features = ["derive"] }
 url = "2.2"
-webpage = "1.2"

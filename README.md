@@ -1,5 +1,7 @@
 # noclickd - noclick.me server
 
+[![dependency status](https://deps.rs/repo/github/noclick-me/noclickd/status.svg)](https://deps.rs/repo/github/noclick-me/noclickd)
+
 Share links with more descriptive URLs!
 
 This repository is the home of the REST API server for the noclick.me, in
