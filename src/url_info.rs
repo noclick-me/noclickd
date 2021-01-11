@@ -44,8 +44,9 @@ impl ResourceInfo {
             .select("p")
             .map_err(|_| ParseError::EmptyHost)? // FIXME
             .map(|n| n.text_contents().trim().to_string())
+            .take(1024)
             .collect::<Vec<_>>()
-            .join(" ")[..1024]
+            .join(" ")
             .to_string();
 
         Ok(Self {
