@@ -7,6 +7,7 @@ use actix_web::{
 use kuchiki::traits::*;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use unicode_segmentation::UnicodeSegmentation;
 use url::Url;
 
 pub use url::ParseError;
@@ -40,13 +41,20 @@ impl ResourceInfo {
             description = elem.attributes.borrow().get("content").map(String::from);
         }
 
-        let content = doc
+        let text_content_vec: Vec<_> = doc
             .select("p")
             .map_err(|_| ParseError::EmptyHost)? // FIXME
-            .map(|n| n.text_contents().trim().to_string())
+            .map(|n| n.text_contents())
+            .collect();
+
+        let content = text_content_vec
+            .iter()
+            .map(|s| s.trim())
             .collect::<Vec<_>>()
-            .join(" ")[..1024]
-            .to_string();
+            .join(" ")
+            .graphemes(true)
+            .take(1024)
+            .collect();
 
         Ok(Self {
             url: url.map(String::from),
