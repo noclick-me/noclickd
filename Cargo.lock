@@ -1207,6 +1207,7 @@ dependencies = [
  "regex",
  "rustls",
  "serde",
+ "unicode-segmentation",
  "url",
 ]
 
