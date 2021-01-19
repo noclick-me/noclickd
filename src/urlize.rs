@@ -1,9 +1,10 @@
 use regex::Regex;
+use unidecode::unidecode;
 
 pub fn urlize_str(text: &str) -> String {
     // TODO: lazy_static
     let re = Regex::new(r"[^-/_~\.0-9a-zA-Z]").unwrap();
-    let text = text.replace(" ", "_").replace("%", "pct");
+    let text = unidecode(text).replace(" ", "_").replace("%", "pct");
     re.replace_all(&text, "-").to_string()
 }
 
@@ -21,9 +22,7 @@ mod tests {
     fn unicode() {
         assert_eq!(
             urlize_str("Æneid étude 北亰 ᔕᓇᓇ げんまい茶 çáéíóúñÑÓÖÎ"),
-            "-neid_-tude_--_---_-----_-----------",
-            // TODO: use https://crates.io/crates/unidecode
-            //"AEneid_etude_Bei_Jing_shanana_genmaiCha_caeiounNOOI"
+            "AEneid_etude_Bei_Jing__shanana_genmaiCha__caeiounNOOI",
         );
     }
 
@@ -36,7 +35,7 @@ mod tests {
     fn untranslated_symbols() {
         assert_eq!(
             urlize_str("+={}[]()*&^`@#$\\|\"';:?!¹¿¡><,´¨>«»”“°³¤€¼"),
-            "-----------------------------------------"
+            "-----------------------1--------------deg3--EUR1/4"
         );
     }
 }
