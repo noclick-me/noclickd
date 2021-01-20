@@ -3,8 +3,12 @@ use unidecode::unidecode;
 
 pub fn urlize_str(text: &str) -> String {
     // TODO: lazy_static
-    let re = Regex::new(r"[^-/_~\.0-9a-zA-Z]").unwrap();
-    let text = unidecode(text).replace(" ", "_").replace("%", "pct");
+    let re = Regex::new(r" +").unwrap();
+    let text = re
+        .replace_all(&unidecode(text), "_")
+        .to_string()
+        .replace("%", "pct");
+    let re = Regex::new(r"[^-/_~\.0-9a-zA-Z]+").unwrap();
     re.replace_all(&text, "-").to_string()
 }
 
@@ -22,7 +26,7 @@ mod tests {
     fn unicode() {
         assert_eq!(
             urlize_str("Æneid étude 北亰 ᔕᓇᓇ げんまい茶 çáéíóúñÑÓÖÎ"),
-            "AEneid_etude_Bei_Jing__shanana_genmaiCha__caeiounNOOI",
+            "AEneid_etude_Bei_Jing_shanana_genmaiCha_caeiounNOOI",
         );
     }
 
@@ -35,7 +39,7 @@ mod tests {
     fn untranslated_symbols() {
         assert_eq!(
             urlize_str("+={}[]()*&^`@#$\\|\"';:?!¹¿¡><,´¨>«»”“°³¤€¼"),
-            "-----------------------1--------------deg3--EUR1/4"
+            "-1-deg3-EUR1/4"
         );
     }
 }
