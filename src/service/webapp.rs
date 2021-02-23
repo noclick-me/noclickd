@@ -12,5 +12,4 @@ async fn webapp() -> impl Responder {
     HttpResponse::Found()
         .header(LOCATION, config().webapp.redirect_to.clone())
         .finish()
-        .into_body()
 }

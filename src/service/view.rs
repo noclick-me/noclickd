@@ -18,5 +18,4 @@ async fn view(path: web::Path<(String, String)>, state: web::Data<SharedState>) 
     HttpResponse::Found()
         .header(LOCATION, entry.source_url.clone())
         .finish()
-        .into_body()
 }
