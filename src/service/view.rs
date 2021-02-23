@@ -1,6 +1,6 @@
 use crate::state::SharedState;
 
-use actix_web::{get, http, web, HttpResponse, Responder, Scope};
+use actix_web::{get, web, Responder, Scope};
 
 pub fn mount(scope: Scope) -> Scope {
     scope.service(view)
@@ -16,8 +16,9 @@ async fn view(
     let read_db = state.db.read().unwrap();
     let entry = read_db.get(&id).unwrap();
 
+    use actix_web::{http::header::LOCATION, HttpResponse};
     HttpResponse::Found()
-        .header(http::header::LOCATION, entry.source_url.clone())
+        .header(LOCATION, entry.source_url.clone())
         .finish()
         .into_body()
 }

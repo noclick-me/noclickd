@@ -1,4 +1,3 @@
-use clap::{App, AppSettings, Arg, SubCommand};
 
 // TODO: move this into it's own lib crate with the cli binary
 #[path = "../url_info.rs"]
@@ -10,6 +9,8 @@ use url_info::ResourceInfo;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    use clap::{App, AppSettings, Arg, SubCommand};
+
     let matches = App::new("urlinfo")
         .version("1.0")
         .author("Leandro Lucarella <luca@llucax.com")
