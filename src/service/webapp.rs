@@ -10,6 +10,6 @@ async fn webapp() -> impl Responder {
     use actix_web::{http::header::LOCATION, HttpResponse};
 
     HttpResponse::Found()
-        .header(LOCATION, config().webapp.redirect_to.clone())
+        .set_header(LOCATION, config().webapp.redirect_to.clone())
         .finish()
 }

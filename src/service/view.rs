@@ -16,6 +16,6 @@ async fn view(path: web::Path<(String, String)>, state: web::Data<SharedState>) 
 
     use actix_web::{http::header::LOCATION, HttpResponse};
     HttpResponse::Found()
-        .header(LOCATION, entry.source_url.clone())
+        .set_header(LOCATION, entry.source_url.clone())
         .finish()
 }
