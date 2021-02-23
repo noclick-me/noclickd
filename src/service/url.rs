@@ -40,10 +40,8 @@ fn get_id() -> String {
 }
 
 #[get("{id}")]
-async fn url_get(
-    web::Path((id,)): web::Path<(String,)>,
-    state: web::Data<SharedState>,
-) -> impl Responder {
+async fn url_get(path: web::Path<(String,)>, state: web::Data<SharedState>) -> impl Responder {
+    let (id,) = path.into_inner();
     dbg!(&id);
     let read_db = state.db.read().unwrap();
     let entry = read_db.get(&id).unwrap();

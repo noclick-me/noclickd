@@ -7,10 +7,8 @@ pub fn mount(scope: Scope) -> Scope {
 }
 
 #[get("{id}/{rest:.*}")]
-async fn view(
-    web::Path((id, rest)): web::Path<(String, String)>,
-    state: web::Data<SharedState>,
-) -> impl Responder {
+async fn view(path: web::Path<(String, String)>, state: web::Data<SharedState>) -> impl Responder {
+    let (id, rest) = path.into_inner();
     dbg!(&id);
     dbg!(&rest);
     let read_db = state.db.read().unwrap();
