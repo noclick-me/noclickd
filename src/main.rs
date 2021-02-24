@@ -5,18 +5,13 @@ mod state;
 mod url_info;
 mod urlize;
 
-use crate::config::config;
-use crate::state::SharedState;
-
-use actix_cors::Cors;
-use actix_web::{guard, middleware, web, App, HttpServer};
-
-use rustls::internal::pemfile::{certs, pkcs8_private_keys};
-use rustls::{NoClientAuth, ServerConfig};
-use std::fs::File;
-use std::io::BufReader;
-
+use rustls::ServerConfig;
 fn tls_config() -> ServerConfig {
+    use rustls::internal::pemfile::{certs, pkcs8_private_keys};
+    use rustls::NoClientAuth;
+    use std::fs::File;
+    use std::io::BufReader;
+
     let mut config = ServerConfig::new(NoClientAuth::new());
     let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
     let key_file = &mut BufReader::new(File::open("key.pem").unwrap());
@@ -28,13 +23,19 @@ fn tls_config() -> ServerConfig {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let matches = cli::create_parser().get_matches();
+    use actix_web::{guard, middleware, web, App, HttpServer};
 
+    use crate::state::SharedState;
     let state = web::Data::new(SharedState::new());
+
+    let matches = crate::cli::create_parser().get_matches();
 
     println!("Binding to: {}...", matches.value_of("bind").unwrap());
     HttpServer::new(move || {
         let state = state.clone();
+
+        use crate::config::config;
+        use actix_cors::Cors;
         let mut cors = Cors::default();
         cors = cors.allowed_headers(config().cors.allowed_headers.clone());
         cors = cors.allowed_methods(config().cors.allowed_methods.clone());

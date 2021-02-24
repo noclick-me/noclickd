@@ -1,10 +1,8 @@
-use crate::config::{config, Config};
+use crate::config::Config;
 use crate::state::{Entry, SharedState};
-use crate::url_info::ResourceInfo;
 
-use actix_web::{get, post, web, HttpResponse, Responder, Scope};
+use actix_web::{get, post, web, Responder, Scope};
 use serde::{Deserialize, Serialize};
-use std::collections::hash_map;
 
 pub fn mount(scope: Scope) -> Scope {
     scope.service(url_get).service(url_post)
@@ -42,19 +40,21 @@ fn get_id() -> String {
 }
 
 #[get("{id}")]
-async fn url_get(
-    web::Path((id,)): web::Path<(String,)>,
-    state: web::Data<SharedState>,
-) -> impl Responder {
+async fn url_get(path: web::Path<(String,)>, state: web::Data<SharedState>) -> impl Responder {
+    let (id,) = path.into_inner();
     dbg!(&id);
     let read_db = state.db.read().unwrap();
     let entry = read_db.get(&id).unwrap();
 
+    use crate::config::config;
+    use actix_web::HttpResponse;
     HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &config()))
 }
 
 #[post("")]
 async fn url_post(rq: web::Json<UrlCreateRq>, state: web::Data<SharedState>) -> impl Responder {
+    use crate::url_info::ResourceInfo;
+
     let info = ResourceInfo::fetch(&rq.url).await.unwrap();
     dbg!(&info);
     let mut id = get_id();
@@ -62,14 +62,17 @@ async fn url_post(rq: web::Json<UrlCreateRq>, state: web::Data<SharedState>) -> 
     let mut write_db = state.db.write().unwrap();
     // TODO: limit looping
     loop {
+        use std::collections::hash_map;
         match write_db.entry(id.to_string()) {
             hash_map::Entry::Occupied(_) => id = get_id(),
             hash_map::Entry::Vacant(e) => {
+                use crate::config::config;
                 let entry = e.insert(Entry {
                     id,
                     source_url: info.url.as_ref().unwrap().clone(), // URL should always exist here
                     noclick_url: info.urlize(config().link.max_length).unwrap(),
                 });
+                use actix_web::HttpResponse;
                 return HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &config()));
             }
         };

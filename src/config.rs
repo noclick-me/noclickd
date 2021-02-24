@@ -1,6 +1,4 @@
-use actix_web::http::{header, HeaderName, Method};
 use lazy_static::lazy_static;
-
 lazy_static! {
     static ref CONF: Config = Config::default();
 }
@@ -20,6 +18,7 @@ pub struct LinkConfig {
     pub max_length: usize,
 }
 
+use actix_web::http::{HeaderName, Method};
 #[derive(Debug)]
 pub struct CorsConfig {
     pub allowed_origins: Vec<String>,
@@ -50,6 +49,7 @@ pub struct Config {
 
 impl Default for Config {
     fn default() -> Self {
+        use actix_web::http::header;
         Self {
             api: ApiConfig {
                 host: "api.noclick.me".to_string(),
