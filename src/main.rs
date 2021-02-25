@@ -28,6 +28,9 @@ async fn main() -> std::io::Result<()> {
     use crate::state::SharedState;
     let state = web::Data::new(SharedState::new());
 
+    use actix_ratelimit::MemoryStore;
+    let rate_limit_store = MemoryStore::new();
+
     let matches = crate::cli::create_parser().get_matches();
 
     println!("Binding to: {}...", matches.value_of("bind").unwrap());
@@ -44,7 +47,21 @@ async fn main() -> std::io::Result<()> {
             cors = cors.allowed_origin(origin);
         }
 
+        let one_day = std::time::Duration::from_secs(60 * 60 * 24);
+
+        // Configure a global rate limit by using a constant identifier to protect against using
+        // all our CPU/network quota. This won't protect us from DoS attacks, for that we need also
+        // some per-ip rate limit, but for now it should be enough.
+        // See https://github.com/noclick-me/noclickd/issues/31.
+        use actix_ratelimit::{MemoryStoreActor, RateLimiter};
+        let rate_limiter_store = MemoryStoreActor::from(rate_limit_store.clone()).start();
+        let rate_limiter = RateLimiter::new(rate_limiter_store.clone())
+            .with_interval(one_day) // 1 day
+            .with_identifier(|_| Ok(String::from("__global__")))
+            .with_max_requests(config().limits.global_requests_per_day);
+
         App::new()
+            .wrap(rate_limiter)
             .wrap(cors)
             .wrap(middleware::Compress::default())
             .app_data(state)

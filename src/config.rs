@@ -8,6 +8,11 @@ pub fn config() -> &'static Config {
 }
 
 #[derive(Debug)]
+pub struct LimitsConfig {
+    pub global_requests_per_day: usize,
+}
+
+#[derive(Debug)]
 pub struct ApiConfig {
     pub host: String,
 }
@@ -40,6 +45,7 @@ pub struct WebappConfig {
 
 #[derive(Debug)]
 pub struct Config {
+    pub limits: LimitsConfig,
     pub api: ApiConfig,
     pub link: LinkConfig,
     pub cors: CorsConfig,
@@ -51,6 +57,9 @@ impl Default for Config {
     fn default() -> Self {
         use actix_web::http::header;
         Self {
+            limits: LimitsConfig {
+                global_requests_per_day: 10_000,
+            },
             api: ApiConfig {
                 host: "api.noclick.me".to_string(),
             },
