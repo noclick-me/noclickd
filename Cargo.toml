@@ -6,9 +6,12 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+default-run = "noclickd"
+
 [dependencies]
 actix-cors = "0.5.4"
 actix-http = "2.2.0"
+actix-ratelimit = { version = "0.3.1", default-features = false, features = ["memory"] }
 actix-web = { version = "3.3.2", features = ["rustls"] }
 clap = "2.33.3"
 futures = "0.3.13"
