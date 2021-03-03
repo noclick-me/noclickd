@@ -59,6 +59,12 @@ async fn main() -> std::io::Result<()> {
             .with_interval(one_day) // 1 day
             .with_identifier(|_| Ok(String::from("__global__")))
             .with_max_requests(config().limits.global_requests_per_day);
+        // We also allow cross-origin requests to retrieve the ratelimit headers
+        cors = cors.expose_headers(vec![
+            "x-ratelimit-limit",
+            "x-ratelimit-remaining",
+            "x-ratelimit-reset",
+        ]);
 
         App::new()
             .wrap(rate_limiter)
