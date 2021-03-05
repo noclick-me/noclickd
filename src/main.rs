@@ -22,7 +22,7 @@ fn tls_config() -> ServerConfig {
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> anyhow::Result<()> {
     use actix_web::{guard, middleware, web, App, HttpServer};
 
     use crate::state::SharedState;
@@ -86,5 +86,7 @@ async fn main() -> std::io::Result<()> {
     })
     .bind_rustls(matches.value_of("bind").unwrap(), tls_config())?
     .run()
-    .await
+    .await?;
+
+    Ok(())
 }
