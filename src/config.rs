@@ -8,19 +8,8 @@ pub fn config() -> &'static Config {
 }
 
 #[derive(Debug)]
-pub struct LimitsConfig {
-    pub global_requests_per_day: usize,
-}
-
-#[derive(Debug)]
 pub struct ApiConfig {
     pub host: String,
-}
-
-#[derive(Debug)]
-pub struct LinkConfig {
-    pub base_url: String,
-    pub max_length: usize,
 }
 
 use actix_web::http::{HeaderName, Method};
@@ -29,6 +18,17 @@ pub struct CorsConfig {
     pub allowed_origins: Vec<String>,
     pub allowed_methods: Vec<Method>,
     pub allowed_headers: Vec<HeaderName>,
+}
+
+#[derive(Debug)]
+pub struct LimitsConfig {
+    pub global_requests_per_day: usize,
+}
+
+#[derive(Debug)]
+pub struct LinkConfig {
+    pub base_url: String,
+    pub max_length: usize,
 }
 
 #[derive(Debug)]
@@ -45,10 +45,10 @@ pub struct WebappConfig {
 
 #[derive(Debug)]
 pub struct Config {
-    pub limits: LimitsConfig,
     pub api: ApiConfig,
-    pub link: LinkConfig,
     pub cors: CorsConfig,
+    pub limits: LimitsConfig,
+    pub link: LinkConfig,
     pub viewer: ViewerConfig,
     pub webapp: WebappConfig,
 }
@@ -57,15 +57,8 @@ impl Default for Config {
     fn default() -> Self {
         use actix_web::http::header;
         Self {
-            limits: LimitsConfig {
-                global_requests_per_day: 10_000,
-            },
             api: ApiConfig {
                 host: "api.noclick.me".to_string(),
-            },
-            link: LinkConfig {
-                base_url: "https://noclick.me".to_string(),
-                max_length: 4096,
             },
             cors: CorsConfig {
                 allowed_origins: vec![
@@ -81,6 +74,13 @@ impl Default for Config {
                 .collect(),
                 allowed_methods: vec![Method::GET, Method::POST],
                 allowed_headers: vec![header::ACCEPT, header::CONTENT_TYPE],
+            },
+            limits: LimitsConfig {
+                global_requests_per_day: 10_000,
+            },
+            link: LinkConfig {
+                base_url: "https://noclick.me".to_string(),
+                max_length: 4096,
             },
             viewer: ViewerConfig {
                 host: "noclick.me".to_string(),
