@@ -79,10 +79,10 @@ async fn main() -> anyhow::Result<()> {
                     }),
                 ),
             )
+            .service(service::url::mount(web::scope("/url")).guard(guard::Host(&config().api.host)))
             .service(
                 service::view::mount(web::scope("/")).guard(guard::Host(&config().viewer.host)),
             )
-            .service(service::url::mount(web::scope("/url")).guard(guard::Host(&config().api.host)))
     })
     .bind_rustls(matches.value_of("bind").unwrap(), tls_config())?
     .run()
