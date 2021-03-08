@@ -13,6 +13,7 @@ actix-cors = "0.5.4"
 actix-http = "2.2.0"
 actix-ratelimit = { version = "0.3.1", default-features = false, features = ["memory"] }
 actix-web = { version = "3.3.2", features = ["rustls"] }
+anyhow = "1.0.38"
 clap = "2.33.3"
 futures = "0.3.13"
 kuchiki = "0.8.1"
@@ -21,6 +22,9 @@ nanoid = "0.3.0"
 regex = "1.4.3"
 rustls = "0.18.1" # We need to stay with 0.18 because actix uses this version
 serde = { version = "1.0.123", features = ["derive"] }
+# We need to stay with 0.4 because newer versions depend on tokio 1.x and
+# actix-web uses tokio pre-1.x
+sqlx = { version = "0.4.2", features = ["runtime-actix-rustls","sqlite"] }
 unicode-segmentation = "1.7.1"
 unidecode = "0.3.0"
 url = "2.2.1"

@@ -1,5 +1,4 @@
 use crate::config::Config;
-use crate::state::{Entry, SharedState};
 
 use actix_web::{get, post, web, Responder, Scope};
 use serde::{Deserialize, Serialize};
@@ -36,15 +35,15 @@ struct UrlCreateRs<'a> {
 }
 
 impl<'a> UrlCreateRs<'a> {
-    fn from_entry(entry: &'a Entry, config: &Config) -> Self {
-        let mut url = format!(
-            "{}/{}/{}",
-            config.link.base_url, entry.id, entry.noclick_url
-        );
+    fn from_row(id: &'a str, row: &'a sqlx::sqlite::SqliteRow, config: &Config) -> Self {
+        use sqlx::Row;
+        let source_url: &str = row.try_get("source_url").unwrap();
+        let noclick_url: &str = row.try_get("noclick_url").unwrap();
+        let mut url = format!("{}/{}/{}", config.link.base_url, id, noclick_url);
         url.truncate(config.link.max_length);
         Self {
-            id: &entry.id,
-            source_url: &entry.source_url,
+            id: &id,
+            source_url: &source_url,
             noclick_url: url,
         }
     }
@@ -122,22 +121,30 @@ mod tests {
 }
 
 #[get("{id}")]
-async fn url_get(path: web::Path<(String,)>, state: web::Data<SharedState>) -> impl Responder {
+async fn url_get(
+    path: web::Path<(String,)>,
+    db_pool: web::Data<sqlx::SqlitePool>,
+) -> impl Responder {
     let (id,) = path.into_inner();
     dbg!(&id);
-    let read_db = state.db.read().unwrap();
-    let entry = read_db.get(&id).unwrap();
+
+    let mut db_conn = db_pool.acquire().await.unwrap();
+    let row = sqlx::query(r"SELECT source_url, noclick_url FROM urls WHERE id = $1")
+        .bind(&id)
+        .fetch_one(&mut db_conn)
+        .await
+        .unwrap();
 
     use crate::config::config;
     use actix_web::HttpResponse;
-    HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &config()))
+    HttpResponse::Ok().json(UrlCreateRs::from_row(&id, &row, &config()))
 }
 
 #[post("")]
 async fn url_post(
     rq: web::Json<UrlCreateRq>,
     id_state: web::Data<IdState>,
-    state: web::Data<SharedState>,
+    db_pool: web::Data<sqlx::SqlitePool>,
 ) -> impl Responder {
     use crate::url_info::ResourceInfo;
 
@@ -151,21 +158,35 @@ async fn url_post(
     let mut idgen = IdGenerator::new(id_state.id_length.get());
     dbg!(&idgen);
 
-    let mut write_db = state.db.write().unwrap();
+    use crate::config::config;
+    let source_url = info.url.as_ref().unwrap().clone(); // URL should always exist here
+    let noclick_url = info.urlize(config().link.max_length).unwrap();
+
+    let mut db_conn = db_pool.acquire().await.unwrap();
+
     use actix_web::HttpResponse;
     while let Some(id) = idgen.next() {
-        use std::collections::hash_map;
-        match write_db.entry(id.to_string()) {
-            hash_map::Entry::Occupied(_) => continue, // retry with next ID
-            hash_map::Entry::Vacant(e) => {
-                use crate::config::config;
-                let entry = e.insert(Entry {
-                    id,
-                    source_url: info.url.as_ref().unwrap().clone(), // URL should always exist here
-                    noclick_url: info.urlize(config().link.max_length).unwrap(),
-                });
+        let result = sqlx::query(
+            r"INSERT OR ABORT INTO urls (id, source_url, noclick_url) VALUES ($1, $2, $3)",
+        )
+        .bind(&id)
+        .bind(&source_url)
+        .bind(&noclick_url)
+        .execute(&mut db_conn)
+        .await;
+        match result {
+            Err(error) => {
+                // TODO: check error
+                dbg!(&error);
+                continue;
+            }
+            Ok(_) => {
                 id_state.id_length.set(idgen.current_length);
-                return HttpResponse::Ok().json(UrlCreateRs::from_entry(&entry, &config()));
+                return HttpResponse::Ok().json(UrlCreateRs {
+                    id: &id,
+                    source_url: &source_url,
+                    noclick_url,
+                });
             }
         };
     }
