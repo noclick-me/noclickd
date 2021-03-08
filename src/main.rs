@@ -25,19 +25,34 @@ fn tls_config() -> ServerConfig {
 async fn main() -> anyhow::Result<()> {
     use actix_web::{guard, middleware, web, App, HttpServer};
 
-    use crate::state::SharedState;
-    let state = web::Data::new(SharedState::new());
-
     use actix_ratelimit::MemoryStore;
     let rate_limit_store = MemoryStore::new();
+
+    use crate::config::config;
+    use anyhow::Context;
+    use sqlx::SqlitePool;
+    let db_pool = SqlitePool::connect(&config().db.url)
+        .await
+        .with_context(|| format!("Failed to open database '{}'", &config().db.url))?;
+
+    // We create the needed tables if they don't exist. This is UGLY, but we don't even know if
+    // we'll keep using SQL (probably not). We are just prototyping.
+    sqlx::query(
+        r#"
+            CREATE TABLE IF NOT EXISTS urls (
+                id          TEXT PRIMARY KEY NOT NULL,
+                source_url  TEXT NOT NULL,
+                noclick_url TEXT NOT NULL
+            );
+        "#,
+    )
+    .execute(&db_pool)
+    .await?;
 
     let matches = crate::cli::create_parser().get_matches();
 
     println!("Binding to: {}...", matches.value_of("bind").unwrap());
     HttpServer::new(move || {
-        let state = state.clone();
-
-        use crate::config::config;
         use actix_cors::Cors;
         let mut cors = Cors::default();
         cors = cors.allowed_headers(config().cors.allowed_headers.clone());
@@ -70,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
             .wrap(rate_limiter)
             .wrap(cors)
             .wrap(middleware::Compress::default())
-            .app_data(state)
+            .data(db_pool.clone())
             .service(
                 service::webapp::mount(web::scope(&config().webapp.redirect_from_path)).guard(
                     guard::fn_guard(|req| {

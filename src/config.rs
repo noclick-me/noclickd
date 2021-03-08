@@ -21,6 +21,11 @@ pub struct CorsConfig {
 }
 
 #[derive(Debug)]
+pub struct DbConfig {
+    pub url: String,
+}
+
+#[derive(Debug)]
 pub struct LimitsConfig {
     pub global_requests_per_day: usize,
 }
@@ -47,6 +52,7 @@ pub struct WebappConfig {
 pub struct Config {
     pub api: ApiConfig,
     pub cors: CorsConfig,
+    pub db: DbConfig,
     pub limits: LimitsConfig,
     pub link: LinkConfig,
     pub viewer: ViewerConfig,
@@ -74,6 +80,10 @@ impl Default for Config {
                 .collect(),
                 allowed_methods: vec![Method::GET, Method::POST],
                 allowed_headers: vec![header::ACCEPT, header::CONTENT_TYPE],
+            },
+            db: DbConfig {
+                // mode=read-write-create if it doesn't exist
+                url: "sqlite://db.sqlite?mode=rwc".to_string(),
             },
             limits: LimitsConfig {
                 global_requests_per_day: 10_000,
