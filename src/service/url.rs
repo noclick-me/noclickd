@@ -34,21 +34,6 @@ struct UrlCreateRs<'a> {
     noclick_url: String,
 }
 
-impl<'a> UrlCreateRs<'a> {
-    fn from_row(id: &'a str, row: &'a sqlx::sqlite::SqliteRow, config: &Config) -> Self {
-        use sqlx::Row;
-        let source_url: &str = row.try_get("source_url").unwrap();
-        let noclick_url: &str = row.try_get("noclick_url").unwrap();
-        let mut url = format!("{}/{}/{}", config.link.base_url, id, noclick_url);
-        url.truncate(config.link.max_length);
-        Self {
-            id: &id,
-            source_url: &source_url,
-            noclick_url: url,
-        }
-    }
-}
-
 // TODO: This should be an actor, because we should count retries for all threads globally,
 // not just the current one, otherwise when the server is under load we might have many more
 // retries than we want until we increment the length.
@@ -135,9 +120,16 @@ async fn url_get(
         .await
         .unwrap();
 
-    use crate::config::config;
+    use sqlx::Row;
+    let source_url: &str = row.try_get("source_url").unwrap();
+    let response = UrlCreateRs {
+        id: &id,
+        source_url: &source_url,
+        noclick_url: row.try_get("noclick_url").unwrap(),
+    };
+
     use actix_web::HttpResponse;
-    HttpResponse::Ok().json(UrlCreateRs::from_row(&id, &row, &config()))
+    HttpResponse::Ok().json(response)
 }
 
 #[post("")]
@@ -160,12 +152,15 @@ async fn url_post(
 
     use crate::config::config;
     let source_url = info.url.as_ref().unwrap().clone(); // URL should always exist here
-    let noclick_url = info.urlize(config().link.max_length).unwrap();
+    let expanded_url = info.urlize(config().link.max_length).unwrap();
 
     let mut db_conn = db_pool.acquire().await.unwrap();
 
     use actix_web::HttpResponse;
     while let Some(id) = idgen.next() {
+        let mut noclick_url = format!("{}/{}/{}", config().link.base_url, id, expanded_url);
+        noclick_url.truncate(config().link.max_length);
+
         let result = sqlx::query(
             r"INSERT OR ABORT INTO urls (id, source_url, noclick_url) VALUES ($1, $2, $3)",
         )
@@ -182,11 +177,12 @@ async fn url_post(
             }
             Ok(_) => {
                 id_state.id_length.set(idgen.current_length);
-                return HttpResponse::Ok().json(UrlCreateRs {
+                let response = UrlCreateRs {
                     id: &id,
                     source_url: &source_url,
                     noclick_url,
-                });
+                };
+                return HttpResponse::Ok().json(response);
             }
         };
     }
