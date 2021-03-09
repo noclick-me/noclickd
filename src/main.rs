@@ -1,7 +1,6 @@
 mod cli;
 mod config;
 mod service;
-mod state;
 mod url_info;
 mod urlize;
 
