@@ -84,7 +84,7 @@ impl ResourceInfo {
                 qitem("image/webp".parse().unwrap()),
                 QualityItem::new("*/*".parse().unwrap(), q(800)),
             ]))
-            .set_header(USER_AGENT, "user-agent: curl/7.72.0")
+            .set_header(USER_AGENT, "curl/7.72.0")
             .set_header(REFERER, "noclick.me");
         let mut response = req.send().await?;
         dbg!(response.headers());
@@ -122,6 +122,9 @@ impl ResourceInfo {
             components.push(&path);
         }
         components.push(&self.title);
+        if let Some(ref description) = self.description {
+        components.push(&description);
+        }
         components.push(&self.content);
         let mut r = components
             .iter()
