@@ -84,7 +84,7 @@ impl ResourceInfo {
                 qitem("image/webp".parse().unwrap()),
                 QualityItem::new("*/*".parse().unwrap(), q(800)),
             ]))
-            .set_header(USER_AGENT, "user-agent: curl/7.72.0")
+            .set_header(USER_AGENT, "curl/7.72.0")
             .set_header(REFERER, "noclick.me");
         let mut response = req.send().await?;
         dbg!(response.headers());
