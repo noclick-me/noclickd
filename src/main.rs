@@ -88,10 +88,9 @@ async fn main() -> anyhow::Result<()> {
             .service(service::url::mount(web::scope("/url")).guard(guard::Host(&config().api.host)))
             .service(
                 service::webapp::mount(web::scope(&config().webapp.redirect_from_path)).guard(
-                    guard::fn_guard(|req| {
-                        req.uri.host() == Some(&config().webapp.redirect_from_host)
-                            && req.uri.path() == config().webapp.redirect_from_path
-                    }),
+                    guard::All(guard::Host(&config().webapp.redirect_from_host)).and(
+                        guard::fn_guard(|req| req.uri.path() == config().webapp.redirect_from_path),
+                    ),
                 ),
             )
             .service(
