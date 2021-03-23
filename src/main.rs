@@ -97,6 +97,7 @@ async fn main() -> anyhow::Result<()> {
             .service(
                 service::view::mount(web::scope("/")).guard(guard::Host(&config().viewer.host)),
             )
+            .default_service(web::route().to(|| actix_web::HttpResponse::NotFound()))
     })
     .bind_rustls(matches.value_of("bind").unwrap(), tls_config())?
     .run()
