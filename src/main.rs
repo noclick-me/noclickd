@@ -22,7 +22,11 @@ fn tls_config() -> ServerConfig {
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
-    use actix_web::{guard, middleware, web, App, HttpServer};
+    env_logger::init_from_env(
+        env_logger::Env::new()
+            .filter("NOCLICKD_LOG")
+            .write_style("NOCLICKD_LOG_STYLE"),
+    );
 
     use actix_ratelimit::MemoryStore;
     let rate_limit_store = MemoryStore::new();
@@ -51,6 +55,8 @@ async fn main() -> anyhow::Result<()> {
     let matches = crate::cli::create_parser().get_matches();
 
     println!("Binding to: {}...", matches.value_of("bind").unwrap());
+
+    use actix_web::{guard, middleware, web, App, HttpServer};
     HttpServer::new(move || {
         use actix_cors::Cors;
         let mut cors = Cors::default();
@@ -81,6 +87,7 @@ async fn main() -> anyhow::Result<()> {
         ]);
 
         App::new()
+            .wrap(middleware::Logger::default())
             .wrap(rate_limiter)
             .wrap(cors)
             .wrap(middleware::Compress::default())

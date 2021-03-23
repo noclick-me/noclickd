@@ -15,9 +15,11 @@ actix-ratelimit = { version = "0.3.1", default-features = false, features = ["me
 actix-web = { version = "3.3.2", features = ["rustls"] }
 anyhow = "1.0.38"
 clap = "2.33.3"
+env_logger = "0.8.3"
 futures = "0.3.13"
 kuchiki = "0.8.1"
 lazy_static = "1.4.0"
+log = "0.4.14"
 nanoid = "0.3.0"
 regex = "1.4.3"
 rustls = "0.18.1" # We need to stay with 0.18 because actix uses this version
