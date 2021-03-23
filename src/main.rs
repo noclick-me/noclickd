@@ -85,6 +85,7 @@ async fn main() -> anyhow::Result<()> {
             .wrap(cors)
             .wrap(middleware::Compress::default())
             .data(db_pool.clone())
+            .service(service::url::mount(web::scope("/url")).guard(guard::Host(&config().api.host)))
             .service(
                 service::webapp::mount(web::scope(&config().webapp.redirect_from_path)).guard(
                     guard::fn_guard(|req| {
@@ -93,7 +94,6 @@ async fn main() -> anyhow::Result<()> {
                     }),
                 ),
             )
-            .service(service::url::mount(web::scope("/url")).guard(guard::Host(&config().api.host)))
             .service(
                 service::view::mount(web::scope("/")).guard(guard::Host(&config().viewer.host)),
             )
