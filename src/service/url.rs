@@ -1,5 +1,3 @@
-use crate::config::Config;
-
 use actix_web::{get, post, web, Responder, Scope};
 use serde::{Deserialize, Serialize};
 
