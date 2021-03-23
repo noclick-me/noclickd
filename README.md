@@ -31,3 +31,6 @@ healthy (specially if you plan to offer this software as a service).
 This project is written in [Rust](https://https://www.rust-lang.org/). Once you have
 a working rust toolchain installed, you can build it with `cargo build` and try
 it out with `cargo run`.
+
+To make logging more verbose, use `NOCLICKD_LOG=debug cargo run` (or `trace`
+instead of `debug` for even more verboseness).
