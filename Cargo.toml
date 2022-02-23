@@ -12,7 +12,7 @@ default-run = "noclickd"
 actix-cors = "0.5.4"
 actix-http = "2.2.0"
 actix-ratelimit = { version = "0.3.1", default-features = false, features = ["memory"] }
-actix-web = { version = "3.3.2", features = ["rustls"] }
+actix-web = { version = "3.3.3", features = ["rustls"] }
 anyhow = "1.0.38"
 clap = "2.33.3"
 env_logger = "0.9.0"
@@ -30,3 +30,5 @@ sqlx = { version = "0.4.2", features = ["runtime-actix-rustls","sqlite"] }
 unicode-segmentation = "1.7.1"
 unidecode = "0.3.0"
 url = "2.2.1"
+config = "0.11.0"
+chrono = "0.4.19"
