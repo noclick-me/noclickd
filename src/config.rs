@@ -1,4 +1,5 @@
 use config::ConfigError;
+use config::{File, FileFormat};
 use lazy_static::lazy_static;
 use serde::Deserialize;
 
@@ -62,10 +63,15 @@ pub struct Config {
 
 impl Config {
     fn new(config_path: String) -> Result<Self, ConfigError> {
-        let mut settings = config::Config::default();
-        settings
-            .merge(config::File::with_name(&config_path))
-            .unwrap();
-        settings.try_into()
+        config::Config::builder()
+            .set_default("db.url", "sqlite://db.sqlite?mode=rwc".to_string())?
+            .set_default("cors.allowed_methods", vec!["GET", "POST"])?
+            .set_default("cors.allowed_headers", vec!["ACCEPT", "CONTENT_TYPE"])?
+            .set_default("limits.global_requests_per_day", 10000)?
+            .set_default("link.max_length", 4096)?
+            .set_default("webapp.redirect_from_path", "/".to_string())?
+            .add_source(File::new(&config_path, FileFormat::Toml))
+            .build()?
+            .try_deserialize()
     }
 }
