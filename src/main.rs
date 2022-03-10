@@ -4,6 +4,7 @@ mod service;
 mod url_info;
 mod urlize;
 
+use actix_http::http::{HeaderName, Method};
 use rustls::ServerConfig;
 fn tls_config() -> ServerConfig {
     use rustls::internal::pemfile::{certs, pkcs8_private_keys};
@@ -60,8 +61,20 @@ async fn main() -> anyhow::Result<()> {
     HttpServer::new(move || {
         use actix_cors::Cors;
         let mut cors = Cors::default();
-        cors = cors.allowed_headers(config().cors.allowed_headers.clone());
-        cors = cors.allowed_methods(config().cors.allowed_methods.clone());
+        let headers: Vec<HeaderName> = config()
+            .cors
+            .allowed_headers
+            .iter()
+            .map(|x| HeaderName::from_bytes(x.as_bytes()).unwrap())
+            .collect();
+        let methods: Vec<Method> = config()
+            .cors
+            .allowed_headers
+            .iter()
+            .map(|x| Method::from_bytes(x.as_bytes()).unwrap())
+            .collect();
+        cors = cors.allowed_headers(headers);
+        cors = cors.allowed_methods(methods);
         cors = cors.max_age(60 * 60 * 24); // 24 hours
         for origin in config().cors.allowed_origins.iter() {
             cors = cors.allowed_origin(origin);

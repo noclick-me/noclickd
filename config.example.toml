@@ -1,0 +1,25 @@
+[api]
+host = "api.noclick.me"
+
+[cors]
+allowed_origins = ["https://noclick.me", "https://web.noclick.me", "https://www.noclick.me", "https://test.noclick.me", "https://app.noclick.me", "https://test.app.noclick.me"]
+allowed_methods = ["GET", "POST"]
+allowed_headers = ["ACCEPT", "CONTENT_TYPE"]
+
+[db]
+url = "sqlite://db.sqlite?mode=rwc"
+
+[limits]
+global_requests_per_day = 10_000
+
+[link]
+base_url = "https://noclick.me"
+max_length = 4096
+
+[viewer]
+host = "noclick.me"
+
+[webapp]
+redirect_from_path = "/"
+redirect_from_host = "noclick.me"
+redirect_to = "https://app.noclick.me/"
