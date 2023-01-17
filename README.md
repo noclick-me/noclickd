@@ -1,3 +1,9 @@
+# Unmaintained
+
+This project is suspended for the time being, because of the lack of time to continue development.
+
+--------
+
 # noclickd - noclick.me server
 
 [![dependency status](https://deps.rs/repo/github/noclick-me/noclickd/status.svg)](https://deps.rs/repo/github/noclick-me/noclickd) [![Licenses Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnoclick-me%2Fnoclickd.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnoclick-me%2Fnoclickd?ref=badge_shield)
